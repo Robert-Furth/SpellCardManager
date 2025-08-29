@@ -42,7 +42,7 @@
                     <CheckBox IsChecked="{Binding IsSearchCaseSensitive}">Case-sensitive search</CheckBox>
                     <Separator Margin="0,0,0,5" />
                     <CheckBox IsChecked="{Binding GroupByLevel}">Group by level</CheckBox>
-                    <CheckBox IsChecked="{Binding FavoritesFirst}">Favorites first</CheckBox>
+                    <!--<CheckBox IsChecked="{Binding FavoritesFirst}">Favorites first</CheckBox>-->
                 </StackPanel>
             </Expander>
         </Border>
@@ -88,8 +88,15 @@
         <ListView Name="SearchResults"
                   Grid.Row="2"
                   BorderThickness="0,0,0,0"
+                  ContextMenuOpening="SearchResults_ContextMenuOpening"
                   ItemsSource="{Binding SortedCards}"
+                  MouseDoubleClick="SearchResults_MouseDoubleClick"
                   SelectedItem="{Binding SelectedCard}">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{StaticResource {x:Static GridView.GridViewItemContainerStyleKey}}" TargetType="ListViewItem">
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.GroupStyle>
                 <GroupStyle>
                     <GroupStyle.HeaderTemplate>
@@ -106,7 +113,29 @@
                             <Setter Property="Visibility" Value="Collapsed" />
                         </Style>
                     </GridView.ColumnHeaderContainerStyle>
-                    <GridViewColumn DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn x:Name="SearchResultCol1">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding Tags}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Ellipse Width="8"
+                                                     Height="8"
+                                                     Margin="4,0,0,0"
+                                                     Fill="{Binding Color, Converter={StaticResource colorToBrushConverter}}"
+                                                     Stroke="{DynamicResource TagBorderBrush}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn x:Name="SearchResultCol2" DisplayMemberBinding="{Binding Name}" />
                 </GridView>
             </ListView.View>
 

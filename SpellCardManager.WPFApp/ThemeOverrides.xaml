@@ -3,6 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
+    <SolidColorBrush x:Key="TagBorderBrush" Color="#404040" />
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Styles/Buttons.xaml" />
         <ResourceDictionary Source="/Styles/FlowDocument.xaml" />

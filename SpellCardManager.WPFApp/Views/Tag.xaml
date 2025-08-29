@@ -11,7 +11,7 @@
         <StreamGeometry x:Key="TagEnd">M 8.8906241,9.5011185e-7 A 4.1646011,4.1646011 0 0 0 5.753906,1.4218758 L 1.3164061,6.4960941 A 5.3228995,5.3228995 0 0 0 0,9.9999996 5.322898,5.322898 0 0 0 1.3164061,13.503905 l 4.4374999,5.074219 a 4.1646005,4.1646005 0 0 0 3.1367181,1.421875 H 17.999999 V 9.5011185e-7 Z M 7.9999989,7.5000002 A 2.5000001,2.5000001 0 0 1 10.499999,9.9999996 2.5000001,2.5000001 0 0 1 7.9999989,12.5 2.5000001,2.5000001 0 0 1 5.4999995,9.9999996 2.5000001,2.5000001 0 0 1 7.9999989,7.5000002 Z</StreamGeometry>
 
         <Style TargetType="local:Tag">
-            <Setter Property="Stroke" Value="#404040" />
+            <Setter Property="Stroke" Value="{DynamicResource TagBorderBrush}" />
         </Style>
 
         <Style BasedOn="{StaticResource SmallButtonStyle}" TargetType="Button">
