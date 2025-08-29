@@ -100,10 +100,9 @@ public partial class SearchPanel {
     }
 
     private void SearchResults_ContextMenuOpening(object sender, ContextMenuEventArgs e) {
-        if (e.OriginalSource is not FrameworkElement src) return;
-
         ContextMenu = new ContextMenu();
-        if (src.DataContext is SpellCard card) {
+
+        if (e.OriginalSource is FrameworkElement src && src.DataContext is SpellCard card) {
             Debug.WriteLine(card);
 
             ContextMenu.Items.Add(new MenuItem {
