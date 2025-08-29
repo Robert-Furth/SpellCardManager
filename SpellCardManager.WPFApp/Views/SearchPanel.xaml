@@ -1,0 +1,115 @@
+﻿<UserControl x:Class="SpellCardManager.WPFApp.Views.SearchPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cvt="clr-namespace:SpellCardManager.WPFApp.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:SpellCardManager.WPFApp.Views"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:SpellCardManager.Backend.Models;assembly=SpellCardManager"
+             xmlns:modernwpf="http://schemas.modernwpf.com/2019"
+             xmlns:vm="clr-namespace:SpellCardManager.ViewModels;assembly=SpellCardManager"
+             Name="Root"
+             d:DataContext="{d:DesignInstance vm:MainViewModelDesign}"
+             d:DesignHeight="500"
+             d:DesignWidth="300"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <cvt:ColorToBrushConverter x:Key="colorToBrushConverter" />
+        <cvt:DarkOrLightTextConverter x:Key="darkOrLightTextConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Border Background="#e0e0e0">
+            <Expander Grid.Row="0"
+                      Padding="10,5,10,5"
+                      BorderThickness="0,0,0,0"
+                      Header="Search/Group Options">
+
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <Style TargetType="{x:Type CheckBox}">
+                            <Setter Property="Margin" Value="0,0,0,5" />
+                        </Style>
+                    </StackPanel.Resources>
+
+                    <CheckBox IsChecked="{Binding SearchDescriptions}">Search descriptions</CheckBox>
+                    <CheckBox IsChecked="{Binding IsSearchWholeWord}">Whole-word search</CheckBox>
+                    <CheckBox IsChecked="{Binding IsSearchCaseSensitive}">Case-sensitive search</CheckBox>
+                    <Separator Margin="0,0,0,5" />
+                    <CheckBox IsChecked="{Binding GroupByLevel}">Group by level</CheckBox>
+                    <CheckBox IsChecked="{Binding FavoritesFirst}">Favorites first</CheckBox>
+                </StackPanel>
+            </Expander>
+        </Border>
+
+        <Border Grid.Row="1"
+                Padding="10,5,10,0"
+                BorderBrush="#FFA0A0A0"
+                BorderThickness="0,1,0,1">
+
+
+            <StackPanel>
+                <TextBox Margin="0,0,0,5"
+                         modernwpf:ControlHelper.PlaceholderText="Search name/description..."
+                         Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}" />
+                <modernwpf:AutoSuggestBox Margin="0,0,0,5"
+                                          PlaceholderText="Search tags..."
+                                          QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                                          Text="{Binding TagSearchBoxText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          TextChanged="AutoSuggestBox_TextChanged" />
+
+                <ItemsControl ItemsSource="{Binding SearchedTags}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:Tag Margin="5,0,0,5"
+                                       CloseButtonVisiblity="Visible"
+                                       CloseCommand="{Binding DataContext.RemoveTagFromSearchCommand, ElementName=Root}"
+                                       CloseCommandParameter="{Binding Name}"
+                                       Foreground="{Binding Color, Converter={StaticResource darkOrLightTextConverter}}"
+                                       TagBackground="{Binding Color, Converter={StaticResource colorToBrushConverter}}"
+                                       Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </Border>
+
+        <ListView Name="SearchResults"
+                  Grid.Row="2"
+                  BorderThickness="0,0,0,0"
+                  ItemsSource="{Binding SortedCards}"
+                  SelectedItem="{Binding SelectedCard}">
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name, StringFormat='Level: {0}'}" />
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+            <ListView.View>
+                <GridView>
+                    <GridView.ColumnHeaderContainerStyle>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </Style>
+                    </GridView.ColumnHeaderContainerStyle>
+                    <GridViewColumn DisplayMemberBinding="{Binding Name}" />
+                </GridView>
+            </ListView.View>
+
+        </ListView>
+    </Grid>
+</UserControl>

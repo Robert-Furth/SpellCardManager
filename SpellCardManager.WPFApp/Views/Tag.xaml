@@ -1,0 +1,80 @@
+﻿<UserControl x:Class="SpellCardManager.WPFApp.Views.Tag"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=PresentationFramework"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:SpellCardManager.WPFApp.Views"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:modernwpf="http://schemas.modernwpf.com/2019"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <StreamGeometry x:Key="TagEnd">M 8.8906241,9.5011185e-7 A 4.1646011,4.1646011 0 0 0 5.753906,1.4218758 L 1.3164061,6.4960941 A 5.3228995,5.3228995 0 0 0 0,9.9999996 5.322898,5.322898 0 0 0 1.3164061,13.503905 l 4.4374999,5.074219 a 4.1646005,4.1646005 0 0 0 3.1367181,1.421875 H 17.999999 V 9.5011185e-7 Z M 7.9999989,7.5000002 A 2.5000001,2.5000001 0 0 1 10.499999,9.9999996 2.5000001,2.5000001 0 0 1 7.9999989,12.5 2.5000001,2.5000001 0 0 1 5.4999995,9.9999996 2.5000001,2.5000001 0 0 1 7.9999989,7.5000002 Z</StreamGeometry>
+
+        <Style TargetType="local:Tag">
+            <Setter Property="Stroke" Value="#404040" />
+        </Style>
+
+        <Style BasedOn="{StaticResource SmallButtonStyle}" TargetType="Button">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Opacity="0.15" Color="{Binding Foreground.Color, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Opacity="0.3" Color="{Binding Foreground.Color, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
+    </UserControl.Resources>
+
+    <StackPanel Height="25" Orientation="Horizontal">
+        <Path Height="25"
+              Margin="0,0,0,0"
+              VerticalAlignment="Top"
+              d:Fill="Green"
+              d:Stroke="Black"
+              Data="{StaticResource TagEnd}"
+              Fill="{Binding TagBackground, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}"
+              SnapsToDevicePixels="True"
+              Stretch="UniformToFill"
+              Stroke="{Binding Stroke, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}"
+              StrokeThickness="1"
+              UseLayoutRounding="False" />
+        <Border Margin="-4,0,0,0"
+                VerticalAlignment="Stretch"
+                d:Background="Green"
+                d:BorderBrush="Black"
+                Background="{Binding TagBackground, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}"
+                BorderBrush="{Binding Stroke, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}"
+                BorderThickness="0,1,1,1"
+                CornerRadius="0,4,4,0"
+                SnapsToDevicePixels="True">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                <TextBlock Margin="0,0,5,0"
+                           d:Text="Combat"
+                           FontWeight="Bold"
+                           Text="{Binding Text, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}" />
+                <Button Width="17"
+                        Height="17"
+                        Margin="0,0,5,0"
+                        Command="{Binding CloseCommand, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}"
+                        CommandParameter="{Binding CloseCommandParameter, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}"
+                        Visibility="{Binding CloseButtonVisiblity, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}">
+                    <Viewbox>
+                        <modernwpf:SymbolIcon Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type local:Tag}}}" Symbol="Clear" />
+                    </Viewbox>
+                </Button>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+
+</UserControl>
