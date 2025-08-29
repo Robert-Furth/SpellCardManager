@@ -37,9 +37,9 @@ namespace SpellCardManager.WPFApp.Controls;
 /// </summary>
 /// 
 
-[TemplatePart(Name = "PART_SaturationValueArea", Type = typeof(Control))]
+[TemplatePart(Name = "PART_SaturationValueArea", Type = typeof(Grid))]
 public partial class ColorPicker : Control {
-    private FrameworkElement? _satValArea;
+    private Grid? _satValArea;
     private FrameworkElement? _satValAreaThumb;
 
     private bool _mouseCaptured = false;
@@ -58,49 +58,32 @@ public partial class ColorPicker : Control {
             Colors.White,
             FrameworkPropertyMetadataOptions.BindsTwoWayByDefault
             | FrameworkPropertyMetadataOptions.AffectsRender,
-            OnSelectedColorPropertyChanged,
-            CoerceColor));
+            OnSelectedColorPropertyChanged));
 
     public Color SelectedColor {
         get => (Color)GetValue(SelectedColorProperty);
-        set => SetValue(SelectedColorProperty, value);
-    }
-
-    private static object CoerceColor(DependencyObject d, object value) {
-        switch (value) {
-            case Color c:
-                return c;
-            case string s:
-                var match = ColorStringRegex().Match(s);
-                if (!match.Success) return Colors.White;
-
-                var hexString = match.Groups[1].Value!;
-                var r = Convert.ToByte(hexString[0..2], 16);
-                var g = Convert.ToByte(hexString[2..4], 16);
-                var b = Convert.ToByte(hexString[4..6], 16);
-                return Color.FromRgb(r, g, b);
-
-            default:
-                return Colors.White;
+        set {
+            SetValue(SelectedColorProperty, value);
         }
     }
 
     private static void OnSelectedColorPropertyChanged(
         DependencyObject d, DependencyPropertyChangedEventArgs e) {
+        if (d is not ColorPicker p) return;
+        p._colorChanging = true;
 
-        if (d is not ColorPicker picker || picker._colorChanging) return;
-        picker._colorChanging = true;
+        try {
+            if (!p._hsvChanging) {
+                var (h, s, v) = ((Color)e.NewValue).GetHSV();
+                p.SelectedHue = h;
+                p.SelectedSaturation = s;
+                p.SelectedValue = v;
+            }
 
-        if (!picker._hsvChanging) {
-            var newColor = (Color)e.NewValue;
-            var (h, s, v) = newColor.GetHSV();
-            picker.SetCurrentValue(SelectedHueProperty, h);
-            picker.SetCurrentValue(SelectedSaturationProperty, s);
-            picker.SetCurrentValue(SelectedValueProperty, v);
+            p.UpdateThumb();
+        } finally {
+            p._colorChanging = false;
         }
-
-        picker.UpdateThumb();
-        picker._colorChanging = false;
     }
 
     public static readonly DependencyProperty SelectedHueProperty = DependencyProperty.Register(
@@ -109,28 +92,29 @@ public partial class ColorPicker : Control {
         typeof(ColorPicker),
         new FrameworkPropertyMetadata(
             0.0D,
-            FrameworkPropertyMetadataOptions.AffectsRender,
-            OnSelectedHuePropertyChanged));
+            FrameworkPropertyMetadataOptions.AffectsRender
+            | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+            OnSelectedHSVPropertiesChanged));
 
     public double SelectedHue {
         get => (double)GetValue(SelectedHueProperty);
         set => SetValue(SelectedHueProperty, value);
     }
 
-    private static void OnSelectedHuePropertyChanged(
+    private static void OnSelectedHSVPropertiesChanged(
         DependencyObject d, DependencyPropertyChangedEventArgs e) {
 
-        if (d is not ColorPicker picker || picker._hsvChanging) return;
-        picker._hsvChanging = true;
-
-        double newHue = (double)e.NewValue;
-        if (!picker._colorChanging) {
-            var newColor = Extensions.ColorFromHSV(
-                newHue, picker.SelectedSaturation, picker.SelectedValue);
-            picker.SetCurrentValue(SelectedColorProperty, newColor);
+        if (d is not ColorPicker p) return;
+        p._hsvChanging = true;
+        try {
+            if (!p._colorChanging) {
+                var newColor = ColorExtensions.ColorFromHSV(
+                    p.SelectedHue, p.SelectedSaturation, p.SelectedValue);
+                p.SelectedColor = newColor;
+            }
+        } finally {
+            p._hsvChanging = false;
         }
-
-        picker._hsvChanging = false;
     }
 
     public static readonly DependencyProperty SelectedSaturationProperty = DependencyProperty.Register(
@@ -139,29 +123,16 @@ public partial class ColorPicker : Control {
         typeof(ColorPicker),
         new FrameworkPropertyMetadata(
             0.0D,
-            FrameworkPropertyMetadataOptions.AffectsRender,
-            OnSelectedSaturationPropertyChanged));
+            FrameworkPropertyMetadataOptions.AffectsRender
+            | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+            OnSelectedHSVPropertiesChanged));
 
     public double SelectedSaturation {
         get => (double)GetValue(SelectedSaturationProperty);
         set => SetValue(SelectedSaturationProperty, value);
     }
 
-    private static void OnSelectedSaturationPropertyChanged(
-        DependencyObject d, DependencyPropertyChangedEventArgs e) {
 
-        if (d is not ColorPicker picker || picker._hsvChanging) return;
-        picker._hsvChanging = true;
-
-        if (!picker._colorChanging) {
-            double newSat = (double)e.NewValue;
-            var newColor = Extensions.ColorFromHSV(
-                picker.SelectedHue, newSat, picker.SelectedValue);
-            picker.SetCurrentValue(SelectedColorProperty, newColor);
-        }
-
-        picker._hsvChanging = false;
-    }
 
     public static readonly DependencyProperty SelectedValueProperty = DependencyProperty.Register(
         nameof(SelectedValue),
@@ -169,29 +140,50 @@ public partial class ColorPicker : Control {
         typeof(ColorPicker),
         new FrameworkPropertyMetadata(
             0.0D,
-            FrameworkPropertyMetadataOptions.AffectsRender,
-            OnSelectedValuePropertyChanged));
+            FrameworkPropertyMetadataOptions.AffectsRender
+            | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+            OnSelectedHSVPropertiesChanged));
 
     public double SelectedValue {
         get => (double)GetValue(SelectedValueProperty);
         set => SetValue(SelectedValueProperty, value);
     }
 
-    private static void OnSelectedValuePropertyChanged(
-        DependencyObject d, DependencyPropertyChangedEventArgs e) {
+    /*public static readonly DependencyPropertyKey ThumbXPropertyKey
+        = DependencyProperty.RegisterReadOnly(
+            nameof(ThumbX),
+            typeof(GridLength),
+            typeof(ColorPicker),
+            new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
-        if (d is not ColorPicker picker || picker._hsvChanging || picker._colorChanging) return;
-        picker._hsvChanging = true;
+    public GridLength ThumbX => (GridLength)GetValue(ThumbXPropertyKey.DependencyProperty);
 
-        if (!picker._colorChanging) {
-            double newVal = (double)e.NewValue;
-            var newColor = Extensions.ColorFromHSV(
-                picker.SelectedHue, picker.SelectedSaturation, newVal);
-            picker.SetCurrentValue(SelectedColorProperty, newColor);
-        }
+    public static readonly DependencyPropertyKey ThumbYPropertyKey
+        = DependencyProperty.RegisterReadOnly(
+            nameof(ThumbY),
+            typeof(GridLength),
+            typeof(ColorPicker),
+            new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
-        picker._hsvChanging = false;
-    }
+    public GridLength ThumbY => (GridLength)GetValue(ThumbYPropertyKey.DependencyProperty);
+
+    public static readonly DependencyPropertyKey ThumbX2PropertyKey
+        = DependencyProperty.RegisterReadOnly(
+            nameof(ThumbX2),
+            typeof(GridLength),
+            typeof(ColorPicker),
+            new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
+
+    public GridLength ThumbX2 => (GridLength)GetValue(ThumbX2PropertyKey.DependencyProperty);
+
+    public static readonly DependencyPropertyKey ThumbY2PropertyKey
+        = DependencyProperty.RegisterReadOnly(
+            nameof(ThumbY2),
+            typeof(GridLength),
+            typeof(ColorPicker),
+            new FrameworkPropertyMetadata(new GridLength(2, GridUnitType.Star)));
+
+    public GridLength ThumbY2 => (GridLength)GetValue(ThumbY2PropertyKey.DependencyProperty);*/
 
     #endregion
 
@@ -227,10 +219,8 @@ public partial class ColorPicker : Control {
         // saturation left-right, value top-bottom
         double saturation = Math.Clamp(p.X / _satValArea.ActualWidth, 0, 1);
         double value = 1 - Math.Clamp(p.Y / _satValArea.ActualHeight, 0, 1);
-
-        //SetCurrentValue(SelectedColorProperty, Extensions.ColorFromHSV(SelectedHue, saturation, value));
-        SetCurrentValue(SelectedSaturationProperty, saturation);
-        SetCurrentValue(SelectedValueProperty, value);
+        SelectedSaturation = saturation;
+        SelectedValue = value;
 
         var p2 = new Point(
             Math.Clamp(p.X, 0, _satValArea.ActualWidth),
@@ -239,18 +229,27 @@ public partial class ColorPicker : Control {
     }
 
     private void UpdateThumb() {
-        if (_satValAreaThumb is null || _satValArea is null) return;
+        if (_satValArea is null) return;
 
-        var x = _satValArea.ActualWidth * SelectedSaturation;
-        var y = _satValArea.ActualHeight * (1 - SelectedValue);
-        var margin = new Thickness(x, y, 0, 0);
-        _satValAreaThumb.Margin = margin;
+        var x = SelectedSaturation;
+        var y = SelectedValue;
+
+        _satValArea.ColumnDefinitions[0].Width = new GridLength(x, GridUnitType.Star);
+        _satValArea.ColumnDefinitions[1].Width = new GridLength(1 - x, GridUnitType.Star);
+        _satValArea.RowDefinitions[0].Height = new GridLength(1 - y, GridUnitType.Star);
+        _satValArea.RowDefinitions[1].Height = new GridLength(y, GridUnitType.Star);
     }
 
     private void UpdateThumb(Point p) {
-        if (_satValAreaThumb is null) return;
-        var margin = new Thickness(p.X, p.Y, 0, 0);
-        _satValAreaThumb.Margin = margin;
+        if (_satValArea is null) return;
+
+        var x = p.X / _satValArea.ActualWidth;
+        var y = p.Y / _satValArea.ActualHeight;
+
+        _satValArea.ColumnDefinitions[0].Width = new GridLength(x, GridUnitType.Star);
+        _satValArea.ColumnDefinitions[1].Width = new GridLength(1 - x, GridUnitType.Star);
+        _satValArea.RowDefinitions[0].Height = new GridLength(y, GridUnitType.Star);
+        _satValArea.RowDefinitions[1].Height = new GridLength(1 - y, GridUnitType.Star);
     }
 
     #endregion
@@ -258,7 +257,7 @@ public partial class ColorPicker : Control {
     public override void OnApplyTemplate() {
         base.OnApplyTemplate();
 
-        _satValArea = (FrameworkElement)GetTemplateChild("PART_SaturationValueArea");
+        _satValArea = (Grid)GetTemplateChild("PART_SaturationValueArea");
         _satValAreaThumb = (FrameworkElement)GetTemplateChild("SatValAreaThumb");
         if (_satValArea != null) {
             _satValArea.MouseLeftButtonDown += PART_SaturationValueArea_MouseLeftButtonDown;

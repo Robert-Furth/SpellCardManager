@@ -39,6 +39,16 @@
         <KeyBinding Key="T"
                     Command="{Binding EditTagsCommand}"
                     Modifiers="Ctrl" />
+
+        <KeyBinding Key="Tab"
+                    Command="{Binding GoToNextTabCommand}"
+                    Modifiers="Ctrl" />
+        <KeyBinding Key="Tab"
+                    Command="{Binding GoToPrevTabCommand}"
+                    Modifiers="Ctrl+Shift" />
+        <KeyBinding Key="W"
+                    Command="{Binding CloseCurrentTabCommand}"
+                    Modifiers="Ctrl" />
     </Window.InputBindings>
 
     <views:MainView x:Name="MainView" />
