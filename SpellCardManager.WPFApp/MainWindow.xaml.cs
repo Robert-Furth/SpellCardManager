@@ -13,8 +13,6 @@ namespace SpellCardManager.WPFApp;
 
 [IViewFor<MainViewModel>]
 public partial class MainWindow : Window {
-    private bool _promptBeforeClose = true;
-
     public MainWindow() {
         InitializeComponent();
 
