@@ -92,6 +92,10 @@
                   ItemsSource="{Binding SortedCards}"
                   MouseDoubleClick="SearchResults_MouseDoubleClick"
                   SelectedItem="{Binding SelectedCard}">
+            <ListView.ContextMenu>
+                <ContextMenu />
+            </ListView.ContextMenu>
+
             <ListView.ItemContainerStyle>
                 <Style BasedOn="{StaticResource {x:Static GridView.GridViewItemContainerStyleKey}}" TargetType="ListViewItem">
                     <Setter Property="VerticalContentAlignment" Value="Center" />

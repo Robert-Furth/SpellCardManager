@@ -100,33 +100,51 @@ public partial class SearchPanel {
     }
 
     private void SearchResults_ContextMenuOpening(object sender, ContextMenuEventArgs e) {
-        ContextMenu = new ContextMenu();
+        var menu = SearchResults.ContextMenu;
+        menu.Items.Clear();
 
         if (e.OriginalSource is FrameworkElement src && src.DataContext is SpellCard card) {
             Debug.WriteLine(card);
 
-            ContextMenu.Items.Add(new MenuItem {
+            menu.Items.Add(new MenuItem {
                 Header = "Edit Spell...",
                 Command = ViewModel.EditSpellCommand,
                 CommandParameter = card,
             });
 
-            ContextMenu.Items.Add(new MenuItem {
+            var tagItem = new MenuItem { Header = "Set Tags" };
+
+            foreach (var tag in ViewModel.SortedTags) {
+                var subItem = new MenuItem {
+                    Header = tag.Name,
+                    IsCheckable = true,
+                    IsChecked = card.Tags.Contains(tag),
+                    Command = ViewModel.ToggleTagForCardCommand,
+                    CommandParameter = new List<object> { tag, card },
+                    StaysOpenOnClick = true,
+                };
+                subItem.Click += (s, e) => ResizeGridViewColumns();
+                tagItem.Items.Add(subItem);
+            }
+
+            menu.Items.Add(tagItem);
+
+            menu.Items.Add(new MenuItem {
                 Header = "Duplicate Spell",
                 Command = ViewModel.DuplicateCardCommand,
                 CommandParameter = card,
             });
 
-            ContextMenu.Items.Add(new MenuItem {
+            menu.Items.Add(new MenuItem {
                 Header = "Delete Spell",
                 Command = ViewModel.RemoveCardCommand,
                 CommandParameter = card,
             });
 
-            ContextMenu.Items.Add(new Separator());
+            menu.Items.Add(new Separator());
         }
 
-        ContextMenu.Items.Add(new MenuItem {
+        menu.Items.Add(new MenuItem {
             Header = "New Spell...",
             Command = ViewModel.EditNewSpellCommand
         });
