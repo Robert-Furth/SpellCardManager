@@ -51,8 +51,6 @@
                 Padding="10,5,10,0"
                 BorderBrush="#FFA0A0A0"
                 BorderThickness="0,1,0,1">
-
-
             <StackPanel>
                 <TextBox Margin="0,0,0,5"
                          modernwpf:ControlHelper.PlaceholderText="Search name/description..."
@@ -103,11 +101,30 @@
             </ListView.ItemContainerStyle>
             <ListView.GroupStyle>
                 <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name, StringFormat='Level: {0}'}" />
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="GroupItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Border x:Name="SearchResultGroup"
+                                                Background="#e0e0e0"
+                                                Loaded="Groups_Loaded">
+                                            <Expander Padding="10,0,0,0"
+                                                      Collapsed="Expander_Collapsed"
+                                                      Expanded="Expander_Expanded">
+                                                <Expander.Header>
+                                                    <TextBlock Text="{Binding Name, StringFormat='Level: {0}'}" />
+                                                </Expander.Header>
+                                                <Border Margin="-10,0,0,0" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}">
+                                                    <ItemsPresenter />
+                                                </Border>
+                                            </Expander>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
                 </GroupStyle>
             </ListView.GroupStyle>
             <ListView.View>
@@ -117,6 +134,7 @@
                             <Setter Property="Visibility" Value="Collapsed" />
                         </Style>
                     </GridView.ColumnHeaderContainerStyle>
+
                     <GridViewColumn x:Name="SearchResultCol1">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -139,6 +157,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+
                     <GridViewColumn x:Name="SearchResultCol2" DisplayMemberBinding="{Binding Name}" />
                 </GridView>
             </ListView.View>
